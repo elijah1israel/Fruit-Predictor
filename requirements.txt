@@ -3,3 +3,4 @@ numpy==1.24.3
 tensorflow==2.13.0
 tensorflow-macos==2.13.0
 Pillow==12.0.0
+setuptools>=65.0.0
