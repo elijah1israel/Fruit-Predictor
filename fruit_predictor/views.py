@@ -22,15 +22,42 @@ def custom_input_layer_deserializer(config):
 MODEL = None
 
 def get_model():
-    """Lazy model loading to avoid startup crashes"""
+    """Lazy model loading with weights-only approach for compatibility"""
     global MODEL
     if MODEL is None:
         try:
+            # Try loading full model first (for backward compatibility)
             MODEL = tf.keras.models.load_model("fruit_classifier_best.keras", compile=False)
-            print("Successfully loaded fruit_classifier_best.keras with TensorFlow 2.20.0")
+            print("Successfully loaded fruit_classifier_best.keras with full model loading")
         except Exception as e:
-            print(f"Error loading model: {e}")
-            MODEL = None
+            print(f"Full model loading failed: {e}")
+            print("Attempting weights-only loading...")
+            try:
+                # Recreate model architecture (without data augmentation used in training)
+                base_model = tf.keras.applications.MobileNetV2(
+                    input_shape=(224, 224, 3),
+                    include_top=False,
+                    weights='imagenet'
+                )
+                base_model.trainable = False
+                
+                MODEL = tf.keras.models.Sequential([
+                    tf.keras.layers.Input(shape=(224, 224, 3)),
+                    base_model,
+                    tf.keras.layers.GlobalAveragePooling2D(),
+                    tf.keras.layers.Dropout(0.5),
+                    tf.keras.layers.Dense(36, activation='softmax')  # 36 fruit classes
+                ])
+                
+                # Load weights from the saved model
+                saved_model = tf.keras.models.load_model("fruit_classifier_best.keras", compile=False)
+                MODEL.set_weights(saved_model.get_weights())
+                
+                print("Successfully loaded model using weights-only approach")
+                
+            except Exception as e2:
+                print(f"Weights-only loading also failed: {e2}")
+                MODEL = None
     return MODEL
 
 # ✅ Load class names once
