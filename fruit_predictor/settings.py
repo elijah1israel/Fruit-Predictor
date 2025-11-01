@@ -23,9 +23,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-6)napq(7pyl6$6m-(+(+knj0vy5&p10$!%ym&%qx#5@a5zf*o)'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['192.168.1.5']
+ALLOWED_HOSTS = [
+    '192.168.1.5',
+    'localhost',
+    '127.0.0.1',
+    'fruit-predictor.onrender.com',
+]
 
 
 # Application definition
