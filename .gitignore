@@ -4,5 +4,9 @@
 /temp
 db.sqlite3
 test.jpeg
+venv/
+__pycache__/
+*.pyc
+*.pyo
 
 
