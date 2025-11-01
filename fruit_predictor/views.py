@@ -20,12 +20,13 @@ def custom_input_layer_deserializer(config):
 
 # ✅ Load model once at startup (not every request)
 MODEL = None
-print("Model loading disabled due to compatibility issues with current TensorFlow version")
-print("The saved models were created with an older TensorFlow/Keras version")
-print("To fix this, you would need to:")
-print("1. Retrain the model with TensorFlow 2.13.0, or")
-print("2. Use a TensorFlow version compatible with the saved models, or")
-print("3. Convert the models to a compatible format")
+try:
+    MODEL = tf.keras.models.load_model("fruit_classifier_best.keras", compile=False)
+    print("Successfully loaded fruit_classifier_best.keras with TensorFlow 2.20.0")
+except Exception as e:
+    print(f"Error loading model: {e}")
+    print("Model loading failed - the app will show an error message for predictions")
+    MODEL = None
 
 # ✅ Load class names once
 with open("class_names.txt", "r") as f:
@@ -41,12 +42,11 @@ def predict(request):
     if MODEL is None:
         return JsonResponse({
             'error': 'Model not loaded due to compatibility issues.',
-            'details': 'The saved models were created with an older TensorFlow/Keras version that is incompatible with the current version (2.13.0). The models contain InputLayer configurations with batch_shape parameters that are not supported in the current version.',
+            'details': 'The saved models were created with an older TensorFlow/Keras version that is incompatible with TensorFlow 2.20.0. The models contain InputLayer configurations that are not supported in the current version.',
             'solutions': [
-                '1. Retrain the model using TensorFlow 2.13.0',
-                '2. Downgrade TensorFlow to a compatible version',
-                '3. Convert the model to SavedModel format',
-                '4. Use model weights only and recreate the architecture'
+                '1. Retrain the model using TensorFlow 2.20.0',
+                '2. Convert the model to SavedModel format',
+                '3. Use model weights only and recreate the architecture'
             ]
         })
         

@@ -11,6 +11,6 @@ echo "Installing scientific packages..."
 pip install numpy
 
 echo "Installing TensorFlow..."
-pip install tensorflow==2.13.0 tensorflow-macos==2.13.0
+pip install tensorflow==2.20.0
 
 echo "Build completed successfully!"
