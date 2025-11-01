@@ -5,7 +5,7 @@ echo "Installing build tools first..."
 pip install --upgrade pip setuptools wheel
 
 echo "Installing core dependencies..."
-pip install Django Pillow
+pip install Django Pillow gunicorn
 
 echo "Installing scientific packages..."
 pip install numpy
