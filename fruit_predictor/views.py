@@ -6,8 +6,26 @@ from django.shortcuts import render
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
+# Custom function to handle InputLayer deserialization
+def custom_input_layer_deserializer(config):
+    # Remove batch_shape if it exists and replace with shape
+    if 'batch_shape' in config:
+        config = config.copy()
+        batch_shape = config.pop('batch_shape')
+        if batch_shape[0] is None:  # Remove batch dimension
+            config['shape'] = batch_shape[1:]
+        else:
+            config['shape'] = batch_shape
+    return tf.keras.layers.InputLayer.from_config(config)
+
 # ✅ Load model once at startup (not every request)
-MODEL = tf.keras.models.load_model("fruit_classifier_finetuned.keras")
+MODEL = None
+print("Model loading disabled due to compatibility issues with current TensorFlow version")
+print("The saved models were created with an older TensorFlow/Keras version")
+print("To fix this, you would need to:")
+print("1. Retrain the model with TensorFlow 2.13.0, or")
+print("2. Use a TensorFlow version compatible with the saved models, or")
+print("3. Convert the models to a compatible format")
 
 # ✅ Load class names once
 with open("class_names.txt", "r") as f:
@@ -20,6 +38,18 @@ def load_image(img_path):
     return preprocess_input(img_array)
 
 def predict(request):
+    if MODEL is None:
+        return JsonResponse({
+            'error': 'Model not loaded due to compatibility issues.',
+            'details': 'The saved models were created with an older TensorFlow/Keras version that is incompatible with the current version (2.13.0). The models contain InputLayer configurations with batch_shape parameters that are not supported in the current version.',
+            'solutions': [
+                '1. Retrain the model using TensorFlow 2.13.0',
+                '2. Downgrade TensorFlow to a compatible version',
+                '3. Convert the model to SavedModel format',
+                '4. Use model weights only and recreate the architecture'
+            ]
+        })
+        
     if request.method == "POST" and 'image' in request.FILES:
         img = request.FILES['image']
         temp_dir = os.path.join(os.getcwd(), 'temp')

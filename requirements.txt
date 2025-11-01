@@ -1,0 +1,8 @@
+Django==5.2.7Django
+
+numpy==1.24.3numpy
+
+tensorflow==2.13.0tensorflow==2.14.0
+
+tensorflow-macos==2.13.0Pillow==10.0.1
+Pillow==12.0.0
