@@ -20,13 +20,18 @@ def custom_input_layer_deserializer(config):
 
 # ✅ Load model once at startup (not every request)
 MODEL = None
-try:
-    MODEL = tf.keras.models.load_model("fruit_classifier_best.keras", compile=False)
-    print("Successfully loaded fruit_classifier_best.keras with TensorFlow 2.20.0")
-except Exception as e:
-    print(f"Error loading model: {e}")
-    print("Model loading failed - the app will show an error message for predictions")
-    MODEL = None
+
+def get_model():
+    """Lazy model loading to avoid startup crashes"""
+    global MODEL
+    if MODEL is None:
+        try:
+            MODEL = tf.keras.models.load_model("fruit_classifier_best.keras", compile=False)
+            print("Successfully loaded fruit_classifier_best.keras with TensorFlow 2.20.0")
+        except Exception as e:
+            print(f"Error loading model: {e}")
+            MODEL = None
+    return MODEL
 
 # ✅ Load class names once
 with open("class_names.txt", "r") as f:
@@ -39,7 +44,8 @@ def load_image(img_path):
     return preprocess_input(img_array)
 
 def predict(request):
-    if MODEL is None:
+    model = get_model()
+    if model is None:
         return JsonResponse({
             'error': 'Model not loaded due to compatibility issues.',
             'details': 'The saved models were created with an older TensorFlow/Keras version that is incompatible with TensorFlow 2.20.0. The models contain InputLayer configurations that are not supported in the current version.',
@@ -62,7 +68,7 @@ def predict(request):
 
         # Process image
         img_array = load_image(img_path)
-        predictions = MODEL.predict(img_array)[0]
+        predictions = model.predict(img_array)[0]
 
         # Top-3 predictions
         top3_indices = predictions.argsort()[-3:][::-1]
